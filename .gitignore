@@ -16,8 +16,8 @@ data/patient_records/*
 
 outputs/
 paper/
-archive/legacy/
-archive/runtime_logs/
+archive/
+notebooks/
 
 dist/
 build/

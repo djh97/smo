@@ -8,10 +8,6 @@ Agentic second medical opinion system packaged as a Python project with a FastAP
 - `src/smo/web/`: FastAPI app, templates, and static assets.
 - `scripts/`: app launcher, API checker, and optional evaluation entrypoints.
 - `data/guidelines/`: WHO/MSF guideline PDFs used to build the retrieval index.
-- `notebooks/archived/`: original notebooks kept for provenance only.
-- `archive/notebook_exports/`: tracked export of the latest notebook used for the refactor.
-
-Tracked archival provenance is intentionally limited to the archived notebooks and the updated notebook export. Older scratch files under `archive/legacy/` and `archive/runtime_logs/` are kept local but excluded from the first Git history.
 
 ## Recommended Environment
 
@@ -121,8 +117,6 @@ Important note:
 |   |-- indices/
 |   |-- patient_records/
 |   `-- samples/
-|-- notebooks/archived/
-|-- archive/notebook_exports/
 |-- scripts/
 `-- src/
     `-- smo/
