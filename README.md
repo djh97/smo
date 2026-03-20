@@ -8,7 +8,7 @@ Agentic second medical opinion system packaged as a Python project with a FastAP
 - `src/smo/web/`: FastAPI app, templates, and static assets.
 - `scripts/`: app launcher, API checker, and optional evaluation entrypoints.
 - `data/guidelines/`: WHO/MSF guideline PDFs used to build the retrieval index.
-- `data/samples/`: sample case inputs, including the paper-referenced `Cases.txt`.
+- `data/samples/`: sample case inputs used by the project and paper.
 
 ## Recommended Environment
 
