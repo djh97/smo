@@ -1,0 +1,39 @@
+# Case 1: 6-year-old with a severe asthma attack
+{
+    "age": 6,
+    "weight": 22,
+    "symptoms": "Severe cough, wheezing, shortness of breath",
+    "spo2": 89,
+    "heart_rate": 115,
+    "history": "Asthma"
+}
+
+# Case 2: 1-year-old malnourished infant with pneumonia secondary to measles
+{
+    "age": 1,
+    "weight": 7.5,
+    "symptoms": "High fever, cough, rapid breathing",
+    "spo2": 88,
+    "heart_rate": 140,
+    "history": "Malnutrition, recent measles infection"
+}
+
+# Case 3: 9-year-old with mild asthma
+{
+    "age": 9,
+    "weight": 30,
+    "symptoms": "Intermittent wheezing and cough",
+    "spo2": 96,
+    "heart_rate": 95,
+    "history": "Asthma"
+}
+
+# Case 4: 70-year-old adult with severe community-acquired pneumonia
+{
+    "age": 70,
+    "weight": 68,
+    "symptoms": "Shortness of breath, chest pain, productive cough",
+    "spo2": 86,
+    "heart_rate": 105,
+    "history": "Hypertension, Type 2 Diabetes"
+}
