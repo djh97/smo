@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agentic Second Medical Opinion</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+  <script src="{{ url_for('static', path='results-pagination.js') }}" defer></script>
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero">
+      <p class="eyebrow">Clinical Decision Support</p>
+      <h1>Second Medical Opinion Generation</h1>
+    </section>
+
+    {% if runtime_warnings %}
+    <section class="status-card warning">
+      <h2>Runtime Notes</h2>
+      <ul>
+        {% for warning in runtime_warnings %}
+        <li>{{ warning }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    <section class="status-card">
+      <h2>Current Runtime</h2>
+      <p><strong>Available tools:</strong> {{ runtime_status.tool_labels | join(', ') if runtime_status.tool_labels else 'None' }}</p>
+      <p><strong>Loaded guideline files:</strong> {{ runtime_status.guideline_files | join(', ') if runtime_status.guideline_files else 'None detected yet' }}</p>
+    </section>
+
+    <section class="panel">
+      <div class="section-head">
+        <h2>Patient Intake</h2>
+        <p>Enter a structured case to generate a guideline-aligned second opinion, or load the latest saved result for a patient ID without using the APIs.</p>
+      </div>
+      <form method="post" action="/submit" class="case-form">
+        <div class="grid two-col">
+          <label>
+            <span>Patient ID (leave blank if new)</span>
+            <input type="text" name="patient_id" value="{{ form_values.patient_id }}">
+          </label>
+          <label>
+            <span>Visit Type</span>
+            <select name="visit_type">
+              <option value="New" {% if form_values.visit_type == 'New' %}selected{% endif %}>New</option>
+              <option value="Follow-up" {% if form_values.visit_type == 'Follow-up' %}selected{% endif %}>Follow-up</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid two-col">
+          <label>
+            <span>Age</span>
+            <input type="number" step="0.1" name="age" value="{{ form_values.age }}">
+          </label>
+          <label>
+            <span>Weight (kg)</span>
+            <input type="number" step="0.1" name="weight" value="{{ form_values.weight }}">
+          </label>
+        </div>
+
+        <div class="grid two-col">
+          <label>
+            <span>SpO2 (%)</span>
+            <input type="number" step="0.1" name="spo2" value="{{ form_values.spo2 }}">
+          </label>
+          <label>
+            <span>Heart Rate (bpm)</span>
+            <input type="number" step="0.1" name="heart_rate" value="{{ form_values.heart_rate }}">
+          </label>
+        </div>
+
+        <label>
+          <span>Medical History</span>
+          <textarea name="history" rows="3">{{ form_values.history }}</textarea>
+        </label>
+
+        <label>
+          <span>Symptoms</span>
+          <textarea name="symptoms" rows="4">{{ form_values.symptoms }}</textarea>
+        </label>
+
+        <div class="form-actions">
+          <button class="primary-button" type="submit">Get Agentic Medical Opinion</button>
+          <button class="secondary-button" type="submit" formaction="/browse" formmethod="post" formnovalidate>Browse Saved Visits</button>
+        </div>
+      </form>
+    </section>
+
+    {% if info %}
+    <section class="status-card info-card">
+      <h2>Saved Result</h2>
+      <p>{{ info }}</p>
+    </section>
+    {% endif %}
+
+    {% if saved_visits %}
+    <section class="status-card history-card">
+      <div class="history-head">
+        <div>
+          <h2>Saved Visits</h2>
+          <p>Patient ID: <strong>{{ saved_patient_id }}</strong></p>
+        </div>
+        <p class="history-count">{{ saved_visits | length }} visit(s)</p>
+      </div>
+
+      <div class="visit-history-grid">
+        {% for visit in saved_visits %}
+        <article class="saved-visit-card {% if visit.timestamp == selected_saved_timestamp %}selected{% endif %}">
+          <div class="saved-visit-meta">
+            <span class="visit-badge">{{ visit.visit_type }}</span>
+            <span class="visit-timestamp">{{ visit.timestamp }}</span>
+          </div>
+          <p class="saved-visit-summary"><strong>Symptoms:</strong> {{ visit.symptoms }}</p>
+          <p class="saved-visit-summary"><strong>Tools:</strong> {{ visit.selected_tools | join(', ') if visit.selected_tools else 'None recorded' }}</p>
+          <div class="saved-visit-actions">
+            <form method="post" action="/load">
+              <input type="hidden" name="patient_id" value="{{ visit.patient_id }}">
+              <input type="hidden" name="timestamp" value="{{ visit.timestamp }}">
+              <button class="ghost-button" type="submit">Open This Visit</button>
+            </form>
+            <a
+              class="ghost-link"
+              href="/export?patient_id={{ visit.patient_id | urlencode }}&timestamp={{ visit.timestamp | urlencode }}"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Open Paper View
+            </a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if error %}
+    <section class="output-card error-card">
+      <div class="pill-label">System Error</div>
+      <p>{{ error }}</p>
+    </section>
+    {% endif %}
+
+    {% if result %}
+    <div class="result-actions">
+      <a
+        class="ghost-link"
+        href="/export?patient_id={{ result.patient_id | urlencode }}&timestamp={{ result.timestamp | urlencode }}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open Paper View
+      </a>
+    </div>
+    <section class="results-grid">
+      <section class="output-card paper-card summary-card">
+        <div class="pill-label">Visit Summary</div>
+        <div class="rich-output">{{ result.visit_summary_html | safe }}</div>
+      </section>
+
+      {{ result.assessment_html | safe }}
+      {{ result.treatment_plan_html | safe }}
+    </section>
+    {% endif %}
+  </main>
+</body>
+</html>

@@ -1,0 +1,42 @@
+[
+  {
+    "visit_type": "New",
+    "patient_id": "P001",
+    "age": 6,
+    "weight": 22,
+    "symptoms": "Severe cough, wheezing, shortness of breath",
+    "spo2": 89,
+    "heart_rate": 115,
+    "history": "Asthma"
+  },
+  {
+    "visit_type": "New",
+    "patient_id": "P002",
+    "age": 1,
+    "weight": 7.5,
+    "symptoms": "High fever, cough, rapid breathing",
+    "spo2": 88,
+    "heart_rate": 140,
+    "history": "Malnutrition, recent measles infection"
+  },
+  {
+    "visit_type": "New",
+    "patient_id": "P003",
+    "age": 9,
+    "weight": 30,
+    "symptoms": "Intermittent wheezing and cough",
+    "spo2": 96,
+    "heart_rate": 95,
+    "history": "Asthma"
+  },
+  {
+    "visit_type": "New",
+    "patient_id": "P004",
+    "age": 70,
+    "weight": 68,
+    "symptoms": "Shortness of breath, chest pain, productive cough",
+    "spo2": 86,
+    "heart_rate": 105,
+    "history": "Hypertension, Type 2 Diabetes"
+  }
+]

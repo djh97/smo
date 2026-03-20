@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Paper Export</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
+  <script src="{{ url_for('static', path='results-pagination.js') }}" defer></script>
+</head>
+<body class="paper-export">
+  <main class="page-shell export-shell">
+    {% if error %}
+    <section class="output-card error-card export-error">
+      <div class="pill-label">Export Error</div>
+      <p>{{ error }}</p>
+    </section>
+    {% endif %}
+
+    {% if result %}
+    <section class="results-grid export-results-grid">
+      <section class="output-card paper-card summary-card">
+        <div class="pill-label">Visit Summary</div>
+        <div class="rich-output">{{ result.visit_summary_html | safe }}</div>
+      </section>
+
+      {{ result.assessment_html | safe }}
+      {{ result.treatment_plan_html | safe }}
+    </section>
+    {% endif %}
+  </main>
+</body>
+</html>
