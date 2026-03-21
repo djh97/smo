@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
+from time import perf_counter
 from typing import TYPE_CHECKING, Callable
 
 import tiktoken
@@ -206,7 +207,9 @@ class AgenticSMOService:
         output: str,
         tokens_in: int,
         tokens_out: int,
+        duration_seconds: float | None = None,
         note: str,
+        details: dict[str, object] | None = None,
     ) -> None:
         self.prompt_logger.log(
             PromptLogEntry(
@@ -215,9 +218,56 @@ class AgenticSMOService:
                 role=role,
                 tokens_in=tokens_in,
                 tokens_out=tokens_out,
+                duration_seconds=duration_seconds,
                 note=note,
+                details=details,
             )
         )
+
+    def _log_runtime_event(
+        self,
+        *,
+        run_id: str,
+        model: str,
+        role: str,
+        duration_seconds: float,
+        note: str,
+        details: dict[str, object] | None = None,
+    ) -> None:
+        self.prompt_logger.log(
+            PromptLogEntry(
+                run_id=run_id,
+                model=model,
+                role=role,
+                tokens_in=0,
+                tokens_out=0,
+                duration_seconds=duration_seconds,
+                note=note,
+                details=details,
+            )
+        )
+
+    def _retrieve_context_timed(
+        self,
+        query_text: str,
+        *,
+        run_id: str,
+        note: str,
+    ) -> str:
+        started_at = perf_counter()
+        rag = self.retriever.retrieve_context(query_text)
+        self._log_runtime_event(
+            run_id=run_id,
+            model="retriever",
+            role="retrieval",
+            duration_seconds=perf_counter() - started_at,
+            note=note,
+            details={
+                "query_text": query_text,
+                "retrieved_context": rag,
+            },
+        )
+        return rag
 
     def _extract_patient_metadata(self, text: str) -> tuple[str | None, str | None]:
         patient_id_match = re.search(r"Patient ID:\s*(\S+)", text)
@@ -274,7 +324,11 @@ class AgenticSMOService:
     def openai_rag_tool(self, input_text: str, run_id: str = "unknown") -> str:
         enriched_input = sanitize_provider_text(self._enrich_followup_case(input_text, style="openai"))
         try:
-            rag = self.retriever.retrieve_context(enriched_input)
+            rag = self._retrieve_context_timed(
+                enriched_input,
+                run_id=run_id,
+                note="GPT-4o retrieval step",
+            )
         except Exception as exc:
             raise RuntimeError(f"GPT-4o retrieval step failed: {exc}") from exc
         prompt = f"""
@@ -291,6 +345,7 @@ Return a structured response with:
 3. Severity Classification
 4. Updated Treatment Plan
 """.strip()
+        started_at = perf_counter()
         try:
             response = self._invoke(self._get_openai_llm(), prompt)
         except Exception as exc:
@@ -303,14 +358,23 @@ Return a structured response with:
             output=response,
             tokens_in=self._tokcount_openai(prompt, self.settings.openai_model),
             tokens_out=self._tokcount_openai(response, self.settings.openai_model),
+            duration_seconds=perf_counter() - started_at,
             note="RAG tool call",
+            details={
+                "prompt": prompt,
+                "output": response,
+            },
         )
         return response
 
     def claude_rag_tool(self, input_text: str, run_id: str = "unknown") -> str:
         enriched_input = sanitize_provider_text(self._enrich_followup_case(input_text, style="claude"))
         try:
-            rag = self.retriever.retrieve_context(enriched_input)
+            rag = self._retrieve_context_timed(
+                enriched_input,
+                run_id=run_id,
+                note="Claude retrieval step",
+            )
         except Exception as exc:
             raise RuntimeError(f"Claude retrieval step failed: {exc}") from exc
         prompt = f"""
@@ -327,6 +391,7 @@ Return a structured medical opinion:
 3. Severity
 4. Treatment Plan Adjustments
 """.strip()
+        started_at = perf_counter()
         try:
             response = self._invoke(self._get_claude_llm(), prompt)
         except Exception as exc:
@@ -339,14 +404,23 @@ Return a structured medical opinion:
             output=response,
             tokens_in=self._tokcount_estimate(prompt),
             tokens_out=self._tokcount_estimate(response),
+            duration_seconds=perf_counter() - started_at,
             note="RAG tool call (estimated tokens)",
+            details={
+                "prompt": prompt,
+                "output": response,
+            },
         )
         return response
 
     def gemini_rag_tool(self, input_text: str, run_id: str = "unknown") -> str:
         enriched_input = sanitize_provider_text(self._enrich_followup_case(input_text, style="gemini"))
         try:
-            rag = self.retriever.retrieve_context(enriched_input)
+            rag = self._retrieve_context_timed(
+                enriched_input,
+                run_id=run_id,
+                note="Gemini retrieval step",
+            )
         except Exception as exc:
             raise RuntimeError(f"Gemini retrieval step failed: {exc}") from exc
         prompt = f"""
@@ -363,6 +437,7 @@ Output a structured response:
 3. Severity Classification
 4. Recommended Treatment Plan
 """.strip()
+        started_at = perf_counter()
         try:
             response = self._invoke(self._get_gemini_llm(), prompt)
         except Exception as exc:
@@ -375,7 +450,12 @@ Output a structured response:
             output=response,
             tokens_in=self._tokcount_estimate(prompt),
             tokens_out=self._tokcount_estimate(response),
+            duration_seconds=perf_counter() - started_at,
             note="RAG tool call (estimated tokens)",
+            details={
+                "prompt": prompt,
+                "output": response,
+            },
         )
         return response
 
@@ -449,6 +529,16 @@ Output a structured response:
         return final_output
 
     def _run_agentic(self, case_text: str, *, run_id: str) -> tuple[str, list[str]]:
+        pipeline_started_at = perf_counter()
+        try:
+            controller_guideline_context = self._retrieve_context_timed(
+                case_text,
+                run_id=run_id,
+                note="Controller retrieval step",
+            )
+        except Exception as exc:
+            raise RuntimeError(f"Controller retrieval step failed: {exc}") from exc
+
         tool_specs = self.available_tool_specs()
         tool_lines = "\n".join(
             f"- {spec['name']} ({spec['detail']})" for spec in tool_specs
@@ -468,6 +558,7 @@ Rules:
 == Patient Case ==
 {case_text}
 """.strip()
+        router_started_at = perf_counter()
         try:
             router_output = self._invoke(self._get_openai_llm(), router_prompt)
         except Exception as exc:
@@ -480,7 +571,12 @@ Rules:
             output=router_output,
             tokens_in=self._tokcount_openai(router_prompt, self.settings.openai_model),
             tokens_out=self._tokcount_openai(router_output, self.settings.openai_model),
+            duration_seconds=perf_counter() - router_started_at,
             note="Router decision (dynamic tool selection)",
+            details={
+                "prompt": router_prompt,
+                "output": router_output,
+            },
         )
 
         raw = router_output.lower()
@@ -501,7 +597,26 @@ Rules:
         synthesis_prompt = f"""
 You are the final medical controller.
 You have up to three expert opinions. Some may be missing if they were not called.
-Synthesize ONE conservative guideline-grounded answer.
+Synthesize ONE conservative, guideline-grounded answer.
+
+Controller rules:
+- Anchor the final answer to the CURRENT patient case, not to a generic disease template.
+- Use the retrieved guideline context as the primary source of truth.
+- When expert tools disagree, prefer the recommendation that is most complete AND most specifically supported by the retrieved guidelines and the patient details.
+- Do NOT average incompatible recommendations into a generic compromise.
+- Preserve patient-specific discriminators, especially age group, SpO2, symptom pattern, and major history/comorbidity details.
+- If the case is pediatric, keep the answer explicitly pediatric; if the case is adult/elderly, keep the answer explicitly adult/elderly.
+- If severity is high, do not under-treat by omitting clearly indicated acute interventions from the stronger guideline-supported tool output.
+- Do NOT add unsupported extrapolations, optional long-term management, or extra investigations unless they are clearly justified by the current case and supported by the retrieved guidelines.
+- Prefer specificity over breadth. A shorter but more case-specific and guideline-faithful recommendation is better than a broad generic one.
+- When one tool provides a more complete guideline-faithful plan, preserve those concrete details rather than compressing them away.
+- Preserve high-value details when they are supported by the retrieved guidelines, especially:
+  - explicit dosing or administration details
+  - oxygen targets
+  - monitoring frequency or key monitoring items
+  - escalation criteria
+  - hospitalization or admission rationale
+  - patient-specific risk factors and severity indicators
 
 Return your final opinion in this exact 4-point format:
 1. Condition trend (if follow-up) OR "Not applicable - first recorded visit."
@@ -509,8 +624,25 @@ Return your final opinion in this exact 4-point format:
 3. Severity Classification
 4. Recommended Treatment Plan
 
+In the final answer:
+- State the diagnosis and severity in a case-specific way.
+- Make the treatment plan patient-specific rather than generic.
+- Include the key acute interventions that are directly indicated.
+- Avoid listing fallback or escalation options unless they are clearly warranted by the current presentation.
+- Under each numbered item, you may use short sub-bullets where helpful.
+- For severe or high-risk cases, produce a richer clinical note rather than a compressed summary.
+- In the treatment plan, include concise sections when supported by the case:
+  - Immediate Management
+  - Monitoring
+  - Hospitalization / Escalation
+  - Post-Stabilization or Follow-up
+- Keep the answer readable, but do not sacrifice clinically important detail for brevity.
+
 == Patient Case ==
 {case_text}
+
+== Retrieved Guidelines ==
+{controller_guideline_context}
 
 == GPT-4o Tool Output ==
 {outputs.get("gpt4_respiratory_analyst", "NOT CALLED")}
@@ -521,6 +653,7 @@ Return your final opinion in this exact 4-point format:
 == Gemini Tool Output ==
 {outputs.get("gemini_respiratory_analyst", "NOT CALLED")}
 """.strip()
+        synthesis_started_at = perf_counter()
         try:
             final_output = self._invoke(self._get_openai_llm(), synthesis_prompt)
         except Exception as exc:
@@ -533,7 +666,23 @@ Return your final opinion in this exact 4-point format:
             output=final_output,
             tokens_in=self._tokcount_openai(synthesis_prompt, self.settings.openai_model),
             tokens_out=self._tokcount_openai(final_output, self.settings.openai_model),
+            duration_seconds=perf_counter() - synthesis_started_at,
             note="Final synthesis (controller)",
+            details={
+                "prompt": synthesis_prompt,
+                "output": final_output,
+                "selected_tools": display_labels,
+            },
+        )
+        self._log_runtime_event(
+            run_id=run_id,
+            model="pipeline",
+            role="total",
+            duration_seconds=perf_counter() - pipeline_started_at,
+            note="End-to-end agentic pipeline runtime",
+            details={
+                "selected_tools": display_labels,
+            },
         )
         return final_output, display_labels
 

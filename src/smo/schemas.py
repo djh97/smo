@@ -55,10 +55,12 @@ class PromptLogEntry:
     role: str
     tokens_in: int
     tokens_out: int
+    duration_seconds: float | None = None
     note: str = ""
+    details: dict[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        payload = {
             "run_id": self.run_id,
             "model": self.model,
             "role": self.role,
@@ -66,6 +68,11 @@ class PromptLogEntry:
             "tokens_out": int(self.tokens_out),
             "note": self.note,
         }
+        if self.duration_seconds is not None:
+            payload["duration_seconds"] = float(self.duration_seconds)
+        if self.details is not None:
+            payload["details"] = self.details
+        return payload
 
 
 @dataclass
