@@ -26,6 +26,15 @@ MODEL_LABEL = {
 
 TOOL_MODELS = ["gpt-4o", "claude-opus-4-6", "gemini-2.5-flash"]
 
+COMPONENT_COLORS = {
+    "GPT-4o Tool": "#4C78A8",
+    "Claude Tool": "#F58518",
+    "Gemini Tool": "#54A24B",
+    "Controller": "#9C755F",
+    "Guideline Retrieval": "#B8B0A2",
+    "Full Agentic Pipeline": "#1B6E5A",
+}
+
 
 class AlignmentScorer:
     def __init__(self) -> None:
@@ -166,27 +175,86 @@ def save_alignment_artifacts(
     summary_df.to_csv(output_dir / "alignment_summary_baseline_rag_agentic.csv", index=False)
 
     df_plot = summary_df.copy()
-    df_plot["Display Label"] = df_plot["Model"] + " (" + df_plot["Config"] + ")"
-    df_plot.loc[df_plot["Config"].str.lower() == "agentic", "Display Label"] = "Agentic Pipeline"
+    display_order = [
+        ("GPT-4o", "Baseline"),
+        ("GPT-4o", "RAG"),
+        ("Claude Opus 4.6", "Baseline"),
+        ("Claude Opus 4.6", "RAG"),
+        ("Gemini 2.5 Flash", "Baseline"),
+        ("Gemini 2.5 Flash", "RAG"),
+        ("Agentic Pipeline", "Agentic"),
+    ]
+    display_labels = {
+        ("GPT-4o", "Baseline"): "GPT-4o Baseline",
+        ("GPT-4o", "RAG"): "GPT-4o RAG",
+        ("Claude Opus 4.6", "Baseline"): "Claude Baseline",
+        ("Claude Opus 4.6", "RAG"): "Claude RAG",
+        ("Gemini 2.5 Flash", "Baseline"): "Gemini Baseline",
+        ("Gemini 2.5 Flash", "RAG"): "Gemini RAG",
+        ("Agentic Pipeline", "Agentic"): "Agentic Pipeline",
+    }
+    palette = {
+        "Baseline": "#C7CEDB",
+        "RAG": "#4C78A8",
+        "Agentic": "#1B6E5A",
+    }
 
-    labels = df_plot["Display Label"]
-    means = df_plot["Mean Alignment"]
-    stds = df_plot["Std Alignment"].fillna(0.0)
+    df_plot["order"] = df_plot.apply(
+        lambda row: display_order.index((row["Model"], row["Config"])),
+        axis=1,
+    )
+    df_plot["Display Label"] = df_plot.apply(
+        lambda row: display_labels[(row["Model"], row["Config"])],
+        axis=1,
+    )
+    df_plot["Color"] = df_plot["Config"].map(palette)
+    df_plot = df_plot.sort_values("order").reset_index(drop=True)
 
-    plt.figure(figsize=(10, 6))
-    plt.bar(labels, means, yerr=stds, capsize=5)
-    plt.xticks(rotation=45, ha="right")
-    plt.ylabel("Mean Cosine Alignment")
-    plt.title("Mean Alignment +/- Std (4 Clinical Cases)")
+    means = df_plot["Mean Alignment"].to_numpy(dtype=float)
+    stds = df_plot["Std Alignment"].fillna(0.0).to_numpy(dtype=float)
+    labels = df_plot["Display Label"].tolist()
+    colors = df_plot["Color"].tolist()
+    y_positions = np.arange(len(df_plot))[::-1]
+
+    plt.figure(figsize=(9, 5.6))
+    ax = plt.gca()
+    for y, mean, std, color in zip(y_positions, means, stds, colors, strict=True):
+        ax.hlines(y, 0, mean, color="#E6E9EF", linewidth=2, zorder=1)
+        ax.errorbar(
+            mean,
+            y,
+            xerr=std,
+            fmt="o",
+            color=color,
+            ecolor=color,
+            elinewidth=1.5,
+            capsize=3,
+            markersize=7,
+            zorder=3,
+        )
+    ax.set_yticks(y_positions, labels)
+    ax.set_xlim(0.0, 1.0)
+    ax.set_xlabel("Mean Cosine Alignment")
+    ax.set_title("Mean Cosine Alignment With Cross-Case Variability")
+    ax.grid(axis="x", alpha=0.25, linewidth=0.8)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(False)
     plt.tight_layout()
     plt.savefig(output_dir / "alignment_std.pdf")
     plt.close()
 
-    plt.figure(figsize=(8, 5))
-    plt.bar(labels, stds)
-    plt.xticks(rotation=45, ha="right")
-    plt.ylabel("Standard Deviation (Across Cases)")
-    plt.title("Alignment Variability by Configuration")
+    plt.figure(figsize=(9, 5.2))
+    ax = plt.gca()
+    ax.barh(y_positions, stds, color=colors, height=0.58)
+    ax.set_yticks(y_positions, labels)
+    ax.set_xlim(0.0, max(0.1, float(stds.max()) + 0.02))
+    ax.set_xlabel("Standard Deviation Across Cases")
+    ax.set_title("Cross-Case Alignment Variability by Configuration")
+    ax.grid(axis="x", alpha=0.25, linewidth=0.8)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(False)
     plt.tight_layout()
     plt.savefig(output_dir / "alignment_variability.pdf")
     plt.close()
@@ -218,6 +286,7 @@ def run_repeatability_experiment(
         scores.append(scorer.score(output, REFERENCE_REPEAT_ANSWER))
 
     scores_arr = np.array(scores)
+    se_alignment = scores_arr.std() / np.sqrt(n_runs)
     summary_df = pd.DataFrame(
         [
             {
@@ -227,8 +296,8 @@ def run_repeatability_experiment(
                 "min_alignment": float(scores_arr.min()),
                 "max_alignment": float(scores_arr.max()),
                 "cv_alignment": float(scores_arr.std() / scores_arr.mean()),
-                "ci_low_95": float(scores_arr.mean() - 1.96 * scores_arr.std()),
-                "ci_high_95": float(scores_arr.mean() + 1.96 * scores_arr.std()),
+                "ci_low_95": float(scores_arr.mean() - 1.96 * se_alignment),
+                "ci_high_95": float(scores_arr.mean() + 1.96 * se_alignment),
             }
         ]
     )
@@ -282,15 +351,16 @@ def build_dynamic_cost_breakdown_dataframe(
             role = str(call.get("role", ""))
             tokens_in = int(call["tokens_in"])
             tokens_out = int(call["tokens_out"])
-            call_cost = cost_from_tokens(model, tokens_in, tokens_out)
 
             if role == "tool" and model in per_tool:
+                call_cost = cost_from_tokens(model, tokens_in, tokens_out)
                 per_tool[model]["in"] += tokens_in
                 per_tool[model]["out"] += tokens_out
                 per_tool[model]["cost"] += call_cost
                 total_cost += call_cost
                 used_tools.add(model)
             elif role == "controller" and model == "gpt-4o":
+                call_cost = cost_from_tokens(model, tokens_in, tokens_out)
                 controller["in"] += tokens_in
                 controller["out"] += tokens_out
                 controller["cost"] += call_cost
@@ -333,6 +403,8 @@ def build_run_level_cost_dataframe(
             model = str(call["model"])
             tokens_in = int(call["tokens_in"])
             tokens_out = int(call["tokens_out"])
+            if model not in PRICING_PER_1M:
+                continue
             per_model.setdefault(model, {"in": 0, "out": 0, "cost": 0.0})
             per_model[model]["in"] += tokens_in
             per_model[model]["out"] += tokens_out
@@ -368,21 +440,123 @@ def save_cost_artifacts(dataframe: pd.DataFrame, output_dir: Path) -> None:
     labels = ["GPT-4o Tool", "Claude Tool", "Gemini Tool", "Controller", "Full Agentic Pipeline"]
     values = [avg_gpt_tool, avg_claude, avg_gemini, avg_controller, avg_total]
 
-    plt.figure(figsize=(10, 4.8))
-    bars = plt.bar(labels, values)
-    for bar, value in zip(bars, values):
-        plt.text(
-            bar.get_x() + bar.get_width() / 2,
-            bar.get_height(),
-            f"${value:.4f}",
-            ha="center",
-            va="bottom",
-            fontsize=9,
-        )
-    plt.ylabel("Average Cost (USD)")
-    plt.title("Average Cost per Agentic Pipeline Component and Total")
+    colors = [COMPONENT_COLORS[label] for label in labels]
+    y_positions = np.arange(len(labels))[::-1]
+
+    plt.figure(figsize=(8.8, 4.8))
+    ax = plt.gca()
+    ax.barh(y_positions, values, color=colors, height=0.6)
+    ax.set_yticks(y_positions, labels)
+    ax.set_xlabel("Average Cost (USD)")
+    ax.set_title("Average Cost per Agentic Component")
+    ax.grid(axis="x", alpha=0.25, linewidth=0.8)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(False)
+    for y, value in zip(y_positions, values, strict=True):
+        ax.text(value + 0.0006, y, f"${value:.4f}", va="center", ha="left", fontsize=9)
+    ax.set_xlim(0.0, max(values) * 1.22)
     plt.tight_layout()
     plt.savefig(output_dir / "agentic_cost_avg_dynamic.png", dpi=300)
+    plt.close()
+
+
+def build_dynamic_latency_breakdown_dataframe(
+    prompt_log_bucket: dict[str, list[dict[str, object]]]
+) -> pd.DataFrame:
+    rows: list[dict[str, object]] = []
+    for run_id in sorted(prompt_log_bucket.keys()):
+        calls = prompt_log_bucket[run_id]
+        retrieval_time = 0.0
+        gpt_tool_time = 0.0
+        claude_tool_time = 0.0
+        gemini_tool_time = 0.0
+        controller_time = 0.0
+        total_time = 0.0
+        used_tools: set[str] = set()
+
+        for call in calls:
+            model = str(call.get("model", ""))
+            role = str(call.get("role", ""))
+            duration = float(call.get("duration_seconds", 0.0) or 0.0)
+
+            if role == "retrieval":
+                retrieval_time += duration
+            elif role == "tool" and model == "gpt-4o":
+                gpt_tool_time += duration
+                used_tools.add(model)
+            elif role == "tool" and model == "claude-opus-4-6":
+                claude_tool_time += duration
+                used_tools.add(model)
+            elif role == "tool" and model == "gemini-2.5-flash":
+                gemini_tool_time += duration
+                used_tools.add(model)
+            elif role == "controller" and model == "gpt-4o":
+                controller_time += duration
+            elif role == "total" and model == "pipeline":
+                total_time += duration
+
+        if total_time <= 0.0:
+            total_time = retrieval_time + gpt_tool_time + claude_tool_time + gemini_tool_time + controller_time
+
+        rows.append(
+            {
+                "Case": run_id,
+                "Tools Used": ", ".join(MODEL_LABEL[model] for model in sorted(used_tools)) if used_tools else "None",
+                "Guideline Retrieval (s)": retrieval_time,
+                "GPT-4o Tool (s)": gpt_tool_time,
+                "Claude Tool (s)": claude_tool_time,
+                "Gemini Tool (s)": gemini_tool_time,
+                "Controller (s)": controller_time,
+                "Total Time (s)": total_time,
+            }
+        )
+
+    dataframe = pd.DataFrame(rows)
+    time_columns = [column for column in dataframe.columns if column.endswith("(s)")]
+    for column in time_columns:
+        dataframe[column] = dataframe[column].astype(float).round(2)
+    return dataframe
+
+
+def save_latency_artifacts(dataframe: pd.DataFrame, output_dir: Path) -> None:
+    ensure_output_dir(output_dir)
+    dataframe.to_csv(output_dir / "table10_dynamic_latency_breakdown.csv", index=False)
+
+    labels = [
+        "Guideline Retrieval",
+        "GPT-4o Tool",
+        "Claude Tool",
+        "Gemini Tool",
+        "Controller",
+        "Full Agentic Pipeline",
+    ]
+    values = [
+        float(dataframe["Guideline Retrieval (s)"].mean()),
+        float(dataframe["GPT-4o Tool (s)"].mean()),
+        float(dataframe["Claude Tool (s)"].mean()),
+        float(dataframe["Gemini Tool (s)"].mean()),
+        float(dataframe["Controller (s)"].mean()),
+        float(dataframe["Total Time (s)"].mean()),
+    ]
+    colors = [COMPONENT_COLORS[label] for label in labels]
+    y_positions = np.arange(len(labels))[::-1]
+
+    plt.figure(figsize=(8.8, 5.0))
+    ax = plt.gca()
+    ax.barh(y_positions, values, color=colors, height=0.6)
+    ax.set_yticks(y_positions, labels)
+    ax.set_xlabel("Average Time (s)")
+    ax.set_title("Average Latency per Agentic Component")
+    ax.grid(axis="x", alpha=0.25, linewidth=0.8)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(False)
+    for y, value in zip(y_positions, values, strict=True):
+        ax.text(value + 0.12, y, f"{value:.2f}s", va="center", ha="left", fontsize=9)
+    ax.set_xlim(0.0, max(values) * 1.22 if values else 1.0)
+    plt.tight_layout()
+    plt.savefig(output_dir / "av_time.png", dpi=300)
     plt.close()
 
 

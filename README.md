@@ -95,11 +95,19 @@ Run them with:
 
 ```powershell
 .\.venv\Scripts\python.exe scripts\run_alignment_eval.py
+.\.venv\Scripts\python.exe scripts\run_geval_eval.py
 .\.venv\Scripts\python.exe scripts\run_repeatability_eval.py
 .\.venv\Scripts\python.exe scripts\run_cost_report.py
 ```
 
 Evaluation artifacts are written to `outputs/evaluation/`.
+
+`run_geval_eval.py` uses the current project models and references to produce:
+
+- per-case G-Eval scores and judge summaries
+- threshold-based precision/recall/F1 summary
+- threshold sweep artifact
+- confusion matrices for the single-model configurations
 
 Important note:
 

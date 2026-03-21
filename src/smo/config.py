@@ -36,6 +36,13 @@ class Settings:
     chunk_size: int = int(os.getenv("SMO_CHUNK_SIZE", "800"))
     chunk_overlap: int = int(os.getenv("SMO_CHUNK_OVERLAP", "100"))
     temperature: float = float(os.getenv("SMO_TEMPERATURE", "0.2"))
+    geval_judge_model: str = os.getenv("SMO_G_EVAL_JUDGE_MODEL", "gpt-4o")
+    geval_threshold: float = float(os.getenv("SMO_G_EVAL_THRESHOLD", "0.90"))
+    geval_threshold_points: int = int(os.getenv("SMO_G_EVAL_THRESHOLD_POINTS", "201"))
+    geval_threshold_rule: str = os.getenv(
+        "SMO_G_EVAL_THRESHOLD_RULE",
+        "Manual fixed threshold",
+    )
 
     def guideline_paths(self) -> list[Path]:
         configured = os.getenv("SMO_GUIDELINE_PATHS", "").strip()

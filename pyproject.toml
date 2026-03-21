@@ -31,6 +31,7 @@ eval = [
   "pandas>=2.2",
   "matplotlib>=3.9",
   "sentence-transformers>=3.0",
+  "scikit-learn>=1.5",
 ]
 
 [tool.setuptools]
