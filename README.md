@@ -39,15 +39,17 @@ GOOGLE_API_KEY=...
 SMO_EMBEDDING_MODEL=text-embedding-ada-002
 ```
 
-Expected guideline filenames from the paper/notebook workflow:
+Expected guideline filenames used in the paper workflow:
 
 - `guideline-170-en-61-113.pdf`
 - `TUV_D1_RESPIRATORY GUIDELINES.pdf`
 
-If needed, you can pin the files explicitly:
+If you keep those PDFs in `data/guidelines/`, no extra configuration is required.
+
+If you want to pin the files explicitly, use repo-relative paths in `.env`:
 
 ```env
-SMO_GUIDELINE_PATHS='C:/Users/Ahmed/SMO/data/guidelines/guideline-170-en-61-113.pdf;C:/Users/Ahmed/SMO/data/guidelines/TUV_D1_RESPIRATORY GUIDELINES.pdf'
+SMO_GUIDELINE_PATHS="data/guidelines/guideline-170-en-61-113.pdf;data/guidelines/TUV_D1_RESPIRATORY GUIDELINES.pdf"
 ```
 
 ## Run The App
@@ -112,7 +114,6 @@ Evaluation artifacts are written to `outputs/evaluation/`.
 Important note:
 
 - A rerun should reproduce the same general evaluation trend, not necessarily identical scores or wording, because the scripts call live models.
-- If you are already satisfied with the paper figures and do not want to spend tokens, you do not need to rerun the evaluation.
 
 ## Repository Layout
 
