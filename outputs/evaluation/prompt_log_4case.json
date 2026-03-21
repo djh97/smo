@@ -1,0 +1,352 @@
+{
+  "P001": [
+    {
+      "run_id": "P001",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Controller retrieval step",
+      "duration_seconds": 0.27754969988018274
+    },
+    {
+      "run_id": "P001",
+      "model": "gpt-4o",
+      "role": "controller",
+      "tokens_in": 197,
+      "tokens_out": 28,
+      "note": "Router decision (dynamic tool selection)",
+      "duration_seconds": 0.7525877002626657
+    },
+    {
+      "run_id": "P001",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "GPT-4o retrieval step",
+      "duration_seconds": 0.23550570011138916
+    },
+    {
+      "run_id": "P001",
+      "model": "gpt-4o",
+      "role": "tool",
+      "tokens_in": 594,
+      "tokens_out": 311,
+      "note": "RAG tool call",
+      "duration_seconds": 3.9291594000533223
+    },
+    {
+      "run_id": "P001",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Claude retrieval step",
+      "duration_seconds": 0.2468290999531746
+    },
+    {
+      "run_id": "P001",
+      "model": "claude-opus-4-6",
+      "role": "tool",
+      "tokens_in": 607,
+      "tokens_out": 1009,
+      "note": "RAG tool call (estimated tokens)",
+      "duration_seconds": 24.626186000183225
+    },
+    {
+      "run_id": "P001",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Gemini retrieval step",
+      "duration_seconds": 0.2692408999428153
+    },
+    {
+      "run_id": "P001",
+      "model": "gemini-2.5-flash",
+      "role": "tool",
+      "tokens_in": 607,
+      "tokens_out": 351,
+      "note": "RAG tool call (estimated tokens)",
+      "duration_seconds": 9.543554299976677
+    },
+    {
+      "run_id": "P001",
+      "model": "gpt-4o",
+      "role": "controller",
+      "tokens_in": 2719,
+      "tokens_out": 506,
+      "note": "Final synthesis (controller)",
+      "duration_seconds": 5.5185654000379145
+    },
+    {
+      "run_id": "P001",
+      "model": "pipeline",
+      "role": "total",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "End-to-end agentic pipeline runtime",
+      "duration_seconds": 45.399984300136566
+    }
+  ],
+  "P002": [
+    {
+      "run_id": "P002",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Controller retrieval step",
+      "duration_seconds": 0.2590576000511646
+    },
+    {
+      "run_id": "P002",
+      "model": "gpt-4o",
+      "role": "controller",
+      "tokens_in": 199,
+      "tokens_out": 28,
+      "note": "Router decision (dynamic tool selection)",
+      "duration_seconds": 0.8909697001799941
+    },
+    {
+      "run_id": "P002",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "GPT-4o retrieval step",
+      "duration_seconds": 0.2147721997462213
+    },
+    {
+      "run_id": "P002",
+      "model": "gpt-4o",
+      "role": "tool",
+      "tokens_in": 612,
+      "tokens_out": 264,
+      "note": "RAG tool call",
+      "duration_seconds": 2.821087900083512
+    },
+    {
+      "run_id": "P002",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Claude retrieval step",
+      "duration_seconds": 0.23614890035241842
+    },
+    {
+      "run_id": "P002",
+      "model": "claude-opus-4-6",
+      "role": "tool",
+      "tokens_in": 622,
+      "tokens_out": 1132,
+      "note": "RAG tool call (estimated tokens)",
+      "duration_seconds": 27.38957089977339
+    },
+    {
+      "run_id": "P002",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Gemini retrieval step",
+      "duration_seconds": 0.3277787999249995
+    },
+    {
+      "run_id": "P002",
+      "model": "gemini-2.5-flash",
+      "role": "tool",
+      "tokens_in": 622,
+      "tokens_out": 363,
+      "note": "RAG tool call (estimated tokens)",
+      "duration_seconds": 6.716616699937731
+    },
+    {
+      "run_id": "P002",
+      "model": "gpt-4o",
+      "role": "controller",
+      "tokens_in": 2824,
+      "tokens_out": 655,
+      "note": "Final synthesis (controller)",
+      "duration_seconds": 6.635112800169736
+    },
+    {
+      "run_id": "P002",
+      "model": "pipeline",
+      "role": "total",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "End-to-end agentic pipeline runtime",
+      "duration_seconds": 45.49194440012798
+    }
+  ],
+  "P003": [
+    {
+      "run_id": "P003",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Controller retrieval step",
+      "duration_seconds": 0.32346259988844395
+    },
+    {
+      "run_id": "P003",
+      "model": "gpt-4o",
+      "role": "controller",
+      "tokens_in": 194,
+      "tokens_out": 19,
+      "note": "Router decision (dynamic tool selection)",
+      "duration_seconds": 0.6301372000016272
+    },
+    {
+      "run_id": "P003",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "GPT-4o retrieval step",
+      "duration_seconds": 0.3177787000313401
+    },
+    {
+      "run_id": "P003",
+      "model": "gpt-4o",
+      "role": "tool",
+      "tokens_in": 591,
+      "tokens_out": 318,
+      "note": "RAG tool call",
+      "duration_seconds": 3.9910311000421643
+    },
+    {
+      "run_id": "P003",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Claude retrieval step",
+      "duration_seconds": 0.22761519998311996
+    },
+    {
+      "run_id": "P003",
+      "model": "claude-opus-4-6",
+      "role": "tool",
+      "tokens_in": 604,
+      "tokens_out": 942,
+      "note": "RAG tool call (estimated tokens)",
+      "duration_seconds": 23.43581120017916
+    },
+    {
+      "run_id": "P003",
+      "model": "gpt-4o",
+      "role": "controller",
+      "tokens_in": 2306,
+      "tokens_out": 340,
+      "note": "Final synthesis (controller)",
+      "duration_seconds": 5.998500700108707
+    },
+    {
+      "run_id": "P003",
+      "model": "pipeline",
+      "role": "total",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "End-to-end agentic pipeline runtime",
+      "duration_seconds": 34.92490840004757
+    }
+  ],
+  "P004": [
+    {
+      "run_id": "P004",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Controller retrieval step",
+      "duration_seconds": 0.9295239998027682
+    },
+    {
+      "run_id": "P004",
+      "model": "gpt-4o",
+      "role": "controller",
+      "tokens_in": 202,
+      "tokens_out": 28,
+      "note": "Router decision (dynamic tool selection)",
+      "duration_seconds": 0.7614831002429128
+    },
+    {
+      "run_id": "P004",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "GPT-4o retrieval step",
+      "duration_seconds": 0.24382960004732013
+    },
+    {
+      "run_id": "P004",
+      "model": "gpt-4o",
+      "role": "tool",
+      "tokens_in": 574,
+      "tokens_out": 286,
+      "note": "RAG tool call",
+      "duration_seconds": 6.2968194000422955
+    },
+    {
+      "run_id": "P004",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Claude retrieval step",
+      "duration_seconds": 0.27125660004094243
+    },
+    {
+      "run_id": "P004",
+      "model": "claude-opus-4-6",
+      "role": "tool",
+      "tokens_in": 585,
+      "tokens_out": 1126,
+      "note": "RAG tool call (estimated tokens)",
+      "duration_seconds": 28.597386999987066
+    },
+    {
+      "run_id": "P004",
+      "model": "retriever",
+      "role": "retrieval",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "Gemini retrieval step",
+      "duration_seconds": 0.3090138998813927
+    },
+    {
+      "run_id": "P004",
+      "model": "gemini-2.5-flash",
+      "role": "tool",
+      "tokens_in": 585,
+      "tokens_out": 546,
+      "note": "RAG tool call (estimated tokens)",
+      "duration_seconds": 8.381793100386858
+    },
+    {
+      "run_id": "P004",
+      "model": "gpt-4o",
+      "role": "controller",
+      "tokens_in": 2983,
+      "tokens_out": 548,
+      "note": "Final synthesis (controller)",
+      "duration_seconds": 7.05239209998399
+    },
+    {
+      "run_id": "P004",
+      "model": "pipeline",
+      "role": "total",
+      "tokens_in": 0,
+      "tokens_out": 0,
+      "note": "End-to-end agentic pipeline runtime",
+      "duration_seconds": 52.84440890001133
+    }
+  ]
+}
