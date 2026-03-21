@@ -1,0 +1,5 @@
+Case,Tools Used,Guideline Retrieval (s),GPT-4o Tool (s),Claude Tool (s),Gemini Tool (s),Controller (s),Total Time (s)
+P001,[All],1.03,3.93,24.63,9.54,6.27,45.40
+P002,[All],1.04,2.82,27.39,6.72,7.53,45.49
+P003,[GPT + Claude],0.87,3.99,23.44,0.00,6.63,34.92
+P004,[All],1.75,6.30,28.60,8.38,7.81,52.84

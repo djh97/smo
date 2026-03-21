@@ -15,6 +15,15 @@ data/patient_records/*
 !data/patient_records/.gitkeep
 
 outputs/
+!outputs/
+outputs/*
+!outputs/evaluation/
+outputs/evaluation/*
+!outputs/evaluation/table9_dynamic_cost_breakdown.csv
+!outputs/evaluation/table10_dynamic_latency_breakdown.csv
+!outputs/evaluation/prompt_log_4case_rich_trace.json
+outputs/evaluation/comparative_*
+outputs/evaluation/prompt_log_blind_compare.json
 paper/
 archive/
 notebooks/

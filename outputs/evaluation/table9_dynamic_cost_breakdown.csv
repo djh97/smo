@@ -1,0 +1,5 @@
+Case,Tools Used,GPT-4o Tool Input,GPT-4o Tool Output,GPT-4o Tool Cost (USD),Claude Tool Input (est),Claude Tool Output (est),Claude Tool Cost (USD),Gemini Tool Input (est),Gemini Tool Output (est),Gemini Tool Cost (USD),Controller (GPT-4o) Input,Controller (GPT-4o) Output,Controller (GPT-4o) Cost (USD),Total Cost (USD)
+P001,[All],594,311,0.004595,607,1009,0.028260,607,351,0.001060,2916,534,0.012630,0.046545
+P002,[All],612,264,0.004170,622,1132,0.031410,622,363,0.001094,3023,683,0.014388,0.051062
+P003,[GPT + Claude],591,318,0.004658,604,942,0.026570,0,0,0.000000,2500,359,0.009840,0.041068
+P004,[All],574,286,0.004295,585,1126,0.031075,585,546,0.001541,3185,576,0.013722,0.050633
